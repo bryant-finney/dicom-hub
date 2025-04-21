@@ -11,5 +11,3 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':  # pragma: no cover
     main()
-else:
-    logger.debug('successfully imported %s', __name__)

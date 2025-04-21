@@ -3034,7 +3034,7 @@ version = "2.2.2"
 description = "Python subprocess replacement"
 optional = false
 python-versions = "<4.0,>=3.8.1"
-groups = ["dev"]
+groups = ["test"]
 files = [
     {file = "sh-2.2.2-py3-none-any.whl", hash = "sha256:e0b15b4ae8ffcd399bc8ffddcbd770a43c7a70a24b16773fbb34c001ad5d52af"},
     {file = "sh-2.2.2.tar.gz", hash = "sha256:653227a7c41a284ec5302173fbc044ee817c7bad5e6e4d8d55741b9aeb9eb65b"},
@@ -3290,6 +3290,21 @@ shellingham = ">=1.3.0"
 typing-extensions = ">=3.7.4.3"
 
 [[package]]
+name = "types-pydicom"
+version = "3.0.0.0"
+description = "Extended type hints for pydicom"
+optional = false
+python-versions = ">=3.10"
+groups = ["lint"]
+files = [
+    {file = "types_pydicom-3.0.0.0-py3-none-any.whl", hash = "sha256:03634ecaf30765606ab0abdee9e743076f76bdb69bbca8712626996b4c29c2e8"},
+    {file = "types_pydicom-3.0.0.0.tar.gz", hash = "sha256:1e44380c899e22842cb300ba13aa28623bacef5ac078f2d613691885360c6bc0"},
+]
+
+[package.extras]
+dev = ["build", "mypy"]
+
+[[package]]
 name = "types-python-dateutil"
 version = "2.9.0.20241206"
 description = "Typing stubs for python-dateutil"
@@ -3467,4 +3482,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "fad782c4cc5d2c92a5d7cb83440c287ee71645651cd2aa7fd5c1d5ee53d97f36"
+content-hash = "8bb723546514dd581820e591e50a84911fc566fe2f1b7dc0b43f1c9d815e1343"

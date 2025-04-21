@@ -39,6 +39,10 @@ dependencies = [
 ]
 scripts.dicom-hub = "dicom_hub.cli:app"
 
+[tool.mypy]
+# https://mypy.readthedocs.io/en/stable/config_file.html#using-a-pyproject-toml-file
+mypy_path = "typings"
+
 [tool.poetry]
 packages = [
   { include = "dicom_hub", from = "src" },
@@ -55,7 +59,6 @@ ipykernel = "^6.29.5"
 pytest-watch = "^4.2.0"
 pdoc = "^15.0.1"
 jupyterlab = "^4.4.0"
-sh = "^2.2.2"
 
 [tool.poetry.group.lint.dependencies]
 anybadge = "^1.16.0"
@@ -69,6 +72,7 @@ mdformat-gfm = "^0.4.1"
 mdformat-frontmatter = "^2.0.8"
 mdformat-footnote = "^0.1.1"
 pyright = { extras = ["nodejs"], version = "^1.1.399" }
+types-pydicom = "^3.0.0.0"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.8.0"
@@ -77,6 +81,7 @@ pytest-clarity = "^1.0.1"
 pytest-cov = "^6.1.1"
 pytest-mock = "^3.14.0"
 pytest-error-for-skips = "^2.0.2"
+sh = "^2.2.2"
 
 [tool.poetry-dynamic-versioning]
 # url: https://github.com/mtkennerly/poetry-dynamic-versioning?tab=readme-ov-file#configuration
@@ -718,13 +723,13 @@ shell = """
 help = "Test this package and report coverage"
 cmd = """
   pytest
-    --cov=./src/
     --cov-branch
     --cov-context=test
-    --cov-fail-under=90
-    --cov-report=term
+    --cov-fail-under=100
     --cov-report=html:./docs/reports/pytest-html
+    --cov-report=term
     --cov-report=xml:./docs/reports/coverage.xml
+    --cov=./src/
     --doctest-glob=README.md
     --junitxml=docs/reports/pytest.xml
     .

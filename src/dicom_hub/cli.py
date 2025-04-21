@@ -18,6 +18,30 @@ this = Path(sys.argv[0]).resolve()
 command = this.name if this.name != '__main__.py' else this.parent.name
 
 
+def help_callback(ctx: typer.Context, value: bool | None = None) -> None:
+    """Print the help message for the command."""
+    if ctx.resilient_parsing:  # pragma: no cover
+        return
+
+    if value:
+        rich.print(ctx.get_help())
+        raise typer.Exit()
+
+
+HelpAnnotation = typing.Annotated[
+    bool | None,
+    typer.Option(
+        '-h',
+        '--help',
+        callback=help_callback,
+        rich_help_panel='Global',
+        show_default=False,
+        is_eager=True,
+        help='Show this message and exit.',
+    ),
+]
+
+
 def version_callback(ctx: typer.Context, value: bool | None) -> None:
     """Print the version of this program."""
     if not value:
@@ -27,21 +51,29 @@ def version_callback(ctx: typer.Context, value: bool | None) -> None:
     raise typer.Exit()
 
 
-@app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    version: typing.Annotated[
-        bool | None,
-        typer.Option(
-            '-V',
-            '--version',
-            callback=version_callback,
-            show_default=False,
-            is_eager=True,
-            help='Print the version and exit',
-        ),
-    ] = None,
-) -> None:
+VersionAnnotation = typing.Annotated[
+    bool | None,
+    typer.Option(
+        '-V',
+        '--version',
+        callback=version_callback,
+        rich_help_panel='Global',
+        show_default=False,
+        show_envvar=False,
+        is_eager=True,
+        help='Print the version and exit.',
+    ),
+]
+
+
+@app.command()
+def version(ctx: typer.Context, get_help: HelpAnnotation = None, version: VersionAnnotation = None) -> None:
+    """Print the version and exit."""
+    version_callback(ctx, True)
+
+
+@app.callback(invoke_without_command=True, no_args_is_help=True)
+def main(ctx: typer.Context, get_help: HelpAnnotation = None, version: VersionAnnotation = None) -> None:
     r"""
     CLI for exercising hub functionality.
 
@@ -51,8 +83,3 @@ def main(
     \ \ \    | |_| | | |__| |_| | |  | | |  _  | |_| | |_) |    / / /
      \_\_\   |____/___\____\___/|_|  |_| |_| |_|\__,_|_.__/    /_/_/[/]
     """
-    if version:
-        version_callback(ctx, True)
-
-    if not ctx.invoked_subcommand:
-        rich.print(ctx.get_help())

@@ -6,6 +6,7 @@ This package wraps all functionality provided by the `pynetdicom` library that i
 import contextlib
 import logging
 from collections.abc import Iterable, Iterator
+from typing import NotRequired, TypedDict, TypeVar
 
 import pynetdicom
 from pynetdicom import ae, build_context
@@ -16,10 +17,14 @@ from pynetdicom.sop_class import ComputedRadiographyImageStorage, CTImageStorage
 from pynetdicomlib import exceptions
 
 __all__ = [
+    'DEFAULT_CLIENT_AE_TITLE',
     'DEFAULT_PRESENTATION_CONTEXTS',
+    'DEFAULT_SERVER_AE_TITLE',
+    'DEFAULT_TIMEOUTS',
     'CTImageStorageContext',
     'ComputedRadiographyImageStorageContext',
     'EnhancedCTImageStorageContext',
+    'TimeoutOpts',
     'VerificationContext',
     'association',
     'server',
@@ -42,12 +47,82 @@ DEFAULT_SERVER_AE_TITLE = 'dicom-hub.server'
 logger = logging.getLogger(__name__)
 
 
+class TimeoutOpts(TypedDict):
+    """Timeout options for the association.
+
+    Attributes
+    ----------
+    acse_timeout
+        The ACSE timeout in seconds; a value of `None` means no timeout (default: `30`)
+
+    connection_timeout
+        The connection timeout in seconds; a value of `None` means no timeout (default: `None`)
+
+    dimse_timeout
+        The DIMSE timeout in seconds; a value of `None` means no timeout (default: `30`)
+
+    network_timeout
+        The network timeout in seconds; a value of `None` means no timeout (default: `60`)
+
+    References
+    ----------
+    - See [Application Entity | API Reference | pynetdicom](https://pydicom.github.io/pynetdicom/dev/reference/generated/pynetdicom.ae.ApplicationEntity.html)
+      for the default timeout values
+    """
+
+    acse_timeout: NotRequired[int | float | None]
+    """The ACSE timeout in seconds; a value of `None` means no timeout (default: `30`)."""
+
+    connection_timeout: NotRequired[int | float | None]
+    """The connection timeout in seconds; a value of `None` means no timeout (default: `None`)."""
+
+    dimse_timeout: NotRequired[int | float | None]
+    """The DIMSE timeout in seconds; a value of `None` means no timeout (default: `30`)."""
+
+    network_timeout: NotRequired[int | float | None]
+    """The network timeout in seconds; a value of `None` means no timeout (default: `60`)"""
+
+
+DEFAULT_TIMEOUTS = TimeoutOpts(acse_timeout=30, connection_timeout=None, dimse_timeout=30, network_timeout=60)
+"""Override the default timeout values used for associations.
+
+References
+----------
+- See [Application Entity | API Reference | pynetdicom](https://pydicom.github.io/pynetdicom/dev/reference/generated/pynetdicom.ae.ApplicationEntity.html)
+  for the default timeout values
+"""
+
+T = TypeVar('T', bound=int | float | TimeoutOpts | None)
+
+
+def _set_timeout(application_entity: ae.ApplicationEntity, timeout: T) -> T:
+    """Set the timeout values for the given `pynetdicom.ae.ApplicationEntity`.
+
+    >>> _set_timeout(ae.ApplicationEntity(), None) is None
+    True
+    """
+    if timeout is None:
+        return timeout
+
+    if isinstance(timeout, dict):
+        val = {k: timeout.get(k, v) for k, v in DEFAULT_TIMEOUTS.items()}
+        for k, v in val.items():
+            setattr(application_entity, k, v)
+        return val  # type: ignore[return-value]  # if `timeout` is a dict, it must be a TimeoutOpts
+
+    for k in DEFAULT_TIMEOUTS:
+        setattr(application_entity, k, timeout)
+
+    return timeout
+
+
 @contextlib.contextmanager
 def association(
     address: tuple[str, int],
     calling_ae_title: str = DEFAULT_CLIENT_AE_TITLE,
     called_ae_title: str = DEFAULT_SERVER_AE_TITLE,
     request_contexts: Iterable[pres.PresentationContext] = DEFAULT_PRESENTATION_CONTEXTS,
+    timeout: int | float | TimeoutOpts | None = DEFAULT_TIMEOUTS,
 ) -> Iterator[pynetdicom.Association]:
     """Context manager that establishes and releases a `pynetdicom.Association` with a remote `pynetdicom.ae.ApplicationEntity`.
 
@@ -66,6 +141,20 @@ def association(
     >>> Status(res.Status)
     <Status.SUCCESS: 0>
 
+    An `int | float` can be passed as the `timeout` argument to override the values all timeout values:
+
+    >>> with association((host, port), timeout=0) as assoc:
+    ...     pass
+    Traceback (most recent call last):
+        ...
+    pynetdicomlib.exceptions.DICOMAssociationError: ...
+
+    Additionally, specific timeout values can be overridden by passing a `TimeoutOpts` dictionary:
+
+    >>> with association((host, port), timeout={'dce_timeout': 0}) as assoc:
+    ...    res = assoc.send_c_echo()
+    >>> Status(res.Status)
+    <Status.SUCCESS: 0>
 
     Parameters
     ----------
@@ -79,6 +168,8 @@ def association(
         The title of the remote `pynetdicom.ae.ApplicationEntity` (SCP); defaults to `'dicom-hub.server'`
     request_contexts
         The presentation contexts to request for the association; defaults to `DEFAULT_PRESENTATION_CONTEXTS`
+    timeout
+        If set, override the ACSE, DIMSE, connection, and network timeouts for the association
 
     Yields
     ------
@@ -96,8 +187,10 @@ def association(
 
     """
     addr, port = address
-    application_entity = ae.ApplicationEntity(ae_title=calling_ae_title)
     remote_aehost = f'{called_ae_title}@{addr}:{port}'
+
+    application_entity = ae.ApplicationEntity(ae_title=calling_ae_title)
+    _set_timeout(application_entity, timeout)
 
     if not (
         assoc := application_entity.associate(addr, port, contexts=list(request_contexts), ae_title=called_ae_title)
@@ -149,7 +242,7 @@ def server(
     application_entity.supported_contexts = list(presentation_contexts)
 
     if not (server := application_entity.start_server(address, block=False)):
-        raise RuntimeError(f'Failed to bind server to address: {address}')
+        raise RuntimeError(f'Failed to bind server to address: {address}')  # pragma: no cover
 
     try:
         logger.info('Server started and listening on %s', address)
