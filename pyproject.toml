@@ -9,7 +9,7 @@ description = "A service class provider for storing DICOM images and triggering 
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Bryant Finney", email = "<bryant.finney@outlook.com>" }]
-requires-python = ">=3.9,<4"
+requires-python = ">=3.10,<4"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -20,7 +20,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -32,20 +31,31 @@ classifiers = [
   "Typing :: Typed",
 ]
 
-dynamic = [ "version" ]
-dependencies = []
+dynamic = ["version"]
+dependencies = [
+  "typer (>=0.15.2,<0.16.0)",
+  "pynetdicom (>=2.1.1,<3.0.0) ; python_version >= \"3.10\" and python_version < \"4\"",
+  "pynetdicom (~=2.0) ; python_version < \"3.10\"",
+]
+scripts.dicom-hub = "dicom_hub.cli:app"
 
 [tool.poetry]
+packages = [
+  { include = "dicom_hub", from = "src" },
+  { include = "pynetdicomlib", from = "src" },
+]
 version = "0.0.0"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 pynvim = "^0.5.2"
 ipykernel = "^6.29.5"
 pytest-watch = "^4.2.0"
 pdoc = "^15.0.1"
+jupyterlab = "^4.4.0"
+sh = "^2.2.2"
 
 [tool.poetry.group.lint.dependencies]
 anybadge = "^1.16.0"
@@ -58,7 +68,7 @@ shellcheck-py = "^0.10.0.1"
 mdformat-gfm = "^0.4.1"
 mdformat-frontmatter = "^2.0.8"
 mdformat-footnote = "^0.1.1"
-pyright = {extras = ["nodejs"], version = "^1.1.399"}
+pyright = { extras = ["nodejs"], version = "^1.1.399" }
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.8.0"
@@ -95,7 +105,7 @@ style = "pep440"
 vcs = "git"
 
 [tool.poetry-dynamic-versioning.substitution]
-files = [ "*.py", "**/__init__.py", "*/__version__.py", "*/_version.py" ]
+files = ["*.py", "**/__init__.py", "*/__version__.py", "*/_version.py"]
 patterns = [
   { value = """(^__version__\\s*(?::.*?)?=\\s*['"])[^'"]*(['"])""", mode = "str" },
   { value = """(^version\\s*(?::.*?)?=\\s*['"])[^'"]*(['"])""", mode = "str" },
@@ -104,8 +114,8 @@ patterns = [
 
 [tool.ruff]
 line-length = 120
-src = [ "src", "tests" ]
-extend-include = [ "*.ipynb" ]
+src = ["src", "tests"]
+extend-include = ["*.ipynb"]
 fix = true
 show-fixes = true
 output-format = "full"
@@ -133,11 +143,11 @@ lint.select = [
   "UP",
   "W",
 ]
-lint.ignore = [ "S603" ]
+lint.ignore = ["S603"]
 # Disallow all relative imports.
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 lint.mccabe.max-complexity = 5
-lint.pydocstyle.convention = "google"
+lint.pydocstyle.convention = "numpy"
 
 [tool.pylint.main]
 # Analyse import fallback blocks. This can be used to support both Python 2 and 3
@@ -166,16 +176,16 @@ fail-under = 9
 # the module_or_package argument.
 # from-stdin =
 # Files or directories to be skipped. They should be base names, not paths.
-ignore = [ "CVS" ]
+ignore = ["CVS"]
 # Add files or directories matching the regular expressions patterns to the
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\' represents the directory delimiter on Windows systems, it
 # can't be used as an escape character.
-ignore-paths = [ "src/dicom_echo/backend.pyi" ]
+ignore-paths = ["src/dicom_echo/backend.pyi"]
 # Files or directories matching the regular expression patterns are skipped. The
 # regex matches against base names, not paths. The default value ignores Emacs
 # file locks
-ignore-patterns = [ "^\\.#" ]
+ignore-patterns = ["^\\.#"]
 # List of module names for which member attributes should not be checked (useful
 # for modules/projects where namespaces are manipulated during runtime and thus
 # existing member attributes cannot be deduced by static analysis). It supports
@@ -199,7 +209,7 @@ load-plugins = "pylint.extensions.mccabe"
 persistent = true
 # Minimum Python version to use for version dependent checks. Will default to the
 # version used to run pylint.
-py-version = "3.8"
+py-version = "3.10"
 # Discover python modules and packages in the file system subtree.
 # recursive =
 # When enabled, pylint would attempt to guess common misconfiguration and emit
@@ -222,7 +232,7 @@ attr-naming-style = "snake_case"
 # style.
 # attr-rgx =
 # Bad variable names which should always be refused, separated by a comma.
-bad-names = [ "foo", "bar", "baz", "toto", "tutu", "tata" ]
+bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
 # Bad variable names regexes, separated by a comma. If names match any regex,
 # they will always be refused
 # bad-names-rgxs =
@@ -257,7 +267,7 @@ function-naming-style = "snake_case"
 # style. If left empty, function names will be checked with the set naming style.
 # function-rgx =
 # Good variable names which should always be accepted, separated by a comma.
-good-names = [ "e", "f", "i", "j", "k", "v", "ex", "Run", "_" ]
+good-names = ["e", "f", "i", "j", "k", "v", "ex", "Run", "_"]
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
 # good-names-rgxs =
@@ -288,7 +298,7 @@ no-docstring-rgx = "^_"
 # List of decorators that produce properties, such as abc.abstractproperty. Add
 # to this list to register other decorators that produce valid properties. These
 # decorators are taken in consideration only for invalid-name.
-property-classes = [ "abc.abstractproperty" ]
+property-classes = ["abc.abstractproperty"]
 # Regular expression matching correct type variable names. If left empty, type
 # variable names will be checked with the set naming style.
 # typevar-rgx =
@@ -302,14 +312,14 @@ variable-naming-style = "snake_case"
 # Warn about protected attribute access inside special methods
 # check-protected-access-in-special-methods =
 # List of method names used to declare (i.e. assign) instance attributes.
-defining-attr-methods = [ "__init__", "__new__", "setUp", "__post_init__" ]
+defining-attr-methods = ["__init__", "__new__", "setUp", "__post_init__"]
 # List of member names, which should be excluded from the protected access
 # warning.
-exclude-protected = [ "_asdict", "_fields", "_replace", "_source", "_make" ]
+exclude-protected = ["_asdict", "_fields", "_replace", "_source", "_make"]
 # List of valid names for the first argument in a class method.
-valid-classmethod-first-arg = [ "cls" ]
+valid-classmethod-first-arg = ["cls"]
 # List of valid names for the first argument in a metaclass class method.
-valid-metaclass-classmethod-first-arg = [ "cls" ]
+valid-metaclass-classmethod-first-arg = ["cls"]
 
 [tool.pylint.design]
 # List of regular expressions of class ancestor names to ignore when counting
@@ -342,7 +352,7 @@ max-complexity = 6
 
 [tool.pylint.exceptions]
 # Exceptions that will emit a warning when caught.
-overgeneral-exceptions = [ "builtins.BaseException", "builtins.Exception" ]
+overgeneral-exceptions = ["builtins.BaseException", "builtins.Exception"]
 
 [tool.pylint.format]
 # Expected format of line ending, e.g. empty (any line ending), LF or CRLF.
@@ -384,7 +394,7 @@ max-module-lines = 1000
 # libraries.
 # known-standard-library =
 # Force import order to recognize a module as part of a third party library.
-known-third-party = [ "enchant" ]
+known-third-party = ["enchant"]
 
 # Couples of modules and preferred modules, separated by a comma.
 # preferred-modules =
@@ -394,7 +404,7 @@ known-third-party = [ "enchant" ]
 logging-format-style = "old"
 # Logging modules to check that the string format arguments are in logging
 # function parameter format.
-logging-modules = [ "logging" ]
+logging-modules = ["logging"]
 
 [tool.pylint."messages control"]
 # Only show warnings with the listed confidence levels. Leave empty to show all.
@@ -432,7 +442,7 @@ disable = [
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where it
 # should appear only once). See also the "--disable" option for examples.
-enable = [ "c-extension-no-member" ]
+enable = ["c-extension-no-member"]
 
 [tool.pylint.method_args]
 # List of qualified names (i.e., library.method) which require a timeout
@@ -450,7 +460,7 @@ timeout-methods = [
 
 [tool.pylint.miscellaneous]
 # List of note tags to take in consideration, separated by a comma.
-notes = [ "FIXME", "XXX", "TODO" ]
+notes = ["FIXME", "XXX", "TODO"]
 
 # Regular expression of note tags to take in consideration.
 # notes-rgx =
@@ -460,7 +470,7 @@ max-nested-blocks = 5
 # Complete name of functions that never returns. When checking for inconsistent-
 # return-statements if a never returning function is called then it will be
 # considered as an explicit return statement and no message will be printed.
-never-returning-functions = [ "sys.exit", "argparse.parse_error" ]
+never-returning-functions = ["sys.exit", "argparse.parse_error"]
 
 [tool.pylint.reports]
 # Python expression which should return a score less than or equal to 10. You
@@ -525,7 +535,7 @@ spelling-ignore-comment-directives = "fmt: on,fmt: off,noqa:,noqa,nosec,isort:sk
 # List of decorators that produce context managers, such as
 # contextlib.contextmanager. Add to this list to register other decorators that
 # produce valid context managers.
-contextmanager-decorators = [ "contextlib.contextmanager" ]
+contextmanager-decorators = ["contextlib.contextmanager"]
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
@@ -582,7 +592,7 @@ allow-global-unused-variables = true
 # allowed-redefined-builtins =
 # List of strings which can identify a callback function by name. A callback name
 # must start or end with one of those strings.
-callbacks = [ "cb_", "_cb" ]
+callbacks = ["cb_", "_cb"]
 # A regular expression matching the name of dummy variables (i.e. expected to not
 # be used).
 dummy-variables-rgx = "_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_"
@@ -609,9 +619,7 @@ filterwarnings = [
   "ignore:The --looponfail command line argument and looponfailroots config variable are deprecated:DeprecationWarning",
   "ignore::DeprecationWarning:dateutil.tz.tz",
 ]
-testpaths = [
-  "tests",
-]
+testpaths = ["src", "tests"]
 xfail_strict = true
 
 [tool.coverage.report]
@@ -626,9 +634,7 @@ skip_covered = true
 command_line = "--module pytest"
 data_file = ".coverage"
 omit = []
-source = [
-  "src",
-]
+source = ["src"]
 
 [tool.coverage.html]
 show_contexts = true
@@ -640,7 +646,12 @@ output = "docs/reports/coverage.xml"
 [tool.pyright]
 # url: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
 # note: file://./pyrightconfig.json has precedence over this section
-strict = []
+deprecateTypingAliases = true
+enableReachabilityAnalysis = true
+strictDictionaryInference = true
+strictListInference = true
+strictSetInference = true
+strict = ['dicom_hub', 'pynetdicom', 'pydicom', 'pynetdicomlib']
 typeCheckingMode = "strict"
 
 [tool.poe]
@@ -664,16 +675,22 @@ ref = "docs-serve --output-directory ./docs"
 help = "Launch a local server to view this package's documentation"
 uses = { PACKAGE_VERSION = "_version" }
 cmd = """
-  pdoc
-    doctest
+  python -m pdoc
+    contextlib
+    pydicom
+    pynetdicom
+    !pynetdicom.apps
+    !pynetdicom.benchmarks
+    pynetdicomlib
+    pynetdicomlib.exceptions
     pathlib
     pytest
     pytest_mock
     pytest_mock.plugin
-    tests
+    tests.fixtures
     typing
     unittest
-    --docformat google
+    --docformat numpy
     --footer "$PACKAGE_VERSION"
     --mermaid
 """
@@ -720,9 +737,7 @@ cmd = "ptw --config ptw.ini"
 
 [tool.poe.tasks.test-py]
 help = "Run the test suite in a virtual environment with the specified Python version"
-args = [
-  { name = "py", positional = true },
-]
+args = [{ name = "py", positional = true }]
 shell = """
   poetry env use $py
   poetry sync
@@ -732,7 +747,7 @@ shell = """
 [tool.poe.tasks.test-python-versions]
 help = "Run the test suite in separate virtual environments for each supported Python version"
 shell = """
-  for py in 3.9 3.10 3.11 3.12 3.13; do
+  for py in 3.10 3.11 3.12 3.13; do
     poetry test-py $py
   done
 """
