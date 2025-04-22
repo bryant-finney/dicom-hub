@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from unittest.mock import MagicMock
 
 import pytest
-from pynetdicom import ae
+from pynetdicom import ae, events
 from pynetdicom import transport as trans
+from pytest_mock import MockerFixture
 
-from pynetdicomlib import DEFAULT_PRESENTATION_CONTEXTS
+from dicomlib import DEFAULT_PRESENTATION_CONTEXTS
 
 
 @pytest.fixture
@@ -24,3 +26,9 @@ def storescp() -> Iterator[trans.AssociationServer]:
         yield scp
     finally:
         scp.shutdown()
+
+
+@pytest.fixture
+def dummy_event(mocker: MockerFixture) -> MagicMock:
+    """Create a mock event for testing."""
+    return mocker.MagicMock(spec=events.Event)

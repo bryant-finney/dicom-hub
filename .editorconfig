@@ -15,5 +15,5 @@ switch_case_indent = true
 [*.sh]
 shell_variant = posix
 
-[{*.py,*.pyi}]
+[{*.ipynb,*.py,*.pyi}]
 indent_size = 4

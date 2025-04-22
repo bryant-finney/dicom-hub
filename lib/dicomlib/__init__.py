@@ -6,29 +6,35 @@ This package wraps all functionality provided by the `pynetdicom` library that i
 import contextlib
 import logging
 from collections.abc import Iterable, Iterator
-from typing import NotRequired, TypedDict, TypeVar
+from typing import NotRequired, ParamSpec, TypedDict, TypeVar
 
 import pynetdicom
 from pynetdicom import ae, build_context
 from pynetdicom import presentation as pres
 from pynetdicom import transport as trans
+from pynetdicom.events import EVT_C_STORE, EventHandlerType
 from pynetdicom.sop_class import ComputedRadiographyImageStorage, CTImageStorage, EnhancedCTImageStorage, Verification
 
-from pynetdicomlib import exceptions
+from dicomlib import exceptions, handlers
 
 __all__ = [
     'DEFAULT_CLIENT_AE_TITLE',
     'DEFAULT_PRESENTATION_CONTEXTS',
     'DEFAULT_SERVER_AE_TITLE',
     'DEFAULT_TIMEOUTS',
+    'EVT_C_STORE',
     'CTImageStorageContext',
     'ComputedRadiographyImageStorageContext',
     'EnhancedCTImageStorageContext',
     'TimeoutOpts',
     'VerificationContext',
     'association',
+    'exceptions',
+    'handlers',
     'server',
 ]
+
+P = ParamSpec('P')
 
 DEFAULT_PRESENTATION_CONTEXTS = (
     CTImageStorageContext := build_context(CTImageStorage),
@@ -147,11 +153,11 @@ def association(
     ...     pass
     Traceback (most recent call last):
         ...
-    pynetdicomlib.exceptions.DICOMAssociationError: ...
+    dicomlib.exceptions.DICOMAssociationError: ...
 
     Additionally, specific timeout values can be overridden by passing a `TimeoutOpts` dictionary:
 
-    >>> with association((host, port), timeout={'dce_timeout': 0}) as assoc:
+    >>> with association((host, port), timeout={'connection_timeout': 0}) as assoc:
     ...    res = assoc.send_c_echo()
     >>> Status(res.Status)
     <Status.SUCCESS: 0>
@@ -169,7 +175,10 @@ def association(
     request_contexts
         The presentation contexts to request for the association; defaults to `DEFAULT_PRESENTATION_CONTEXTS`
     timeout
-        If set, override the ACSE, DIMSE, connection, and network timeouts for the association
+        Behavior varies according to type; defaults to `DEFAULT_TIMEOUTS`
+        - If `None`, use the default values defined in `pynetdicom`
+        - If a `dict` (`TimeoutOpts`), override `DEFAULT_TIMEOUTS` with the provided key/value pairs
+        - Otherwise, set all timeouts to that value
 
     Yields
     ------
@@ -178,13 +187,12 @@ def association(
 
     Raises
     ------
-    pynetdicomlib.exceptions.DICOMAssociationError
+    dicomlib.exceptions.DICOMAssociationError
         If the association could not be established with the remote peer
 
     References
     ----------
-    - [ ] TODO: add references to documentation sources
-
+    - [Writing your first SCU | `pynetdicom`](https://pydicom.github.io/pynetdicom/dev/tutorials/create_scu.html#create-an-application-entity-and-associate)
     """
     addr, port = address
     remote_aehost = f'{called_ae_title}@{addr}:{port}'
@@ -209,6 +217,7 @@ def server(
     address: tuple[str, int],
     ae_title: str = DEFAULT_SERVER_AE_TITLE,
     presentation_contexts: Iterable[pres.PresentationContext] = DEFAULT_PRESENTATION_CONTEXTS,
+    evt_handlers: list[EventHandlerType] | None = None,  # pyright: ignore[reportMissingTypeArgument]  # false positive
 ) -> Iterator[trans.AssociationServer]:
     """Context manager for running a `pynetdicom.ae.ApplicationEntity` server in a background thread.
 
@@ -235,13 +244,17 @@ def server(
 
     Yields
     ------
-    server : pynetdicom.transport.AssociationServer
+    server
         The `pynetdicom.transport.AssociationServer` object for handling incoming associations
+
+    References
+    ----------
+    - [Writing your first SCP | `pynetdicom`](https://pydicom.github.io/pynetdicom/dev/tutorials/create_scp.html#creating-a-storage-scp)
     """
     application_entity = ae.ApplicationEntity(ae_title=ae_title)
     application_entity.supported_contexts = list(presentation_contexts)
 
-    if not (server := application_entity.start_server(address, block=False)):
+    if not (server := application_entity.start_server(address, evt_handlers=evt_handlers, block=False)):
         raise RuntimeError(f'Failed to bind server to address: {address}')  # pragma: no cover
 
     try:

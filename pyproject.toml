@@ -46,7 +46,7 @@ mypy_path = "typings"
 [tool.poetry]
 packages = [
   { include = "dicom_hub", from = "src" },
-  { include = "pynetdicomlib", from = "src" },
+  { include = "dicomlib", from = "lib" },
 ]
 version = "0.0.0"
 
@@ -125,6 +125,12 @@ fix = true
 show-fixes = true
 output-format = "full"
 format.quote-style = "single"
+# Disallow all relative imports.
+lint.flake8-tidy-imports.ban-relative-imports = "all"
+lint.ignore = ["S603"]
+lint.isort.known-first-party = ["dicom_hub", "dicomlib"]
+lint.mccabe.max-complexity = 5
+lint.pydocstyle.convention = "numpy"
 lint.select = [
   "B",
   "C90",
@@ -148,11 +154,6 @@ lint.select = [
   "UP",
   "W",
 ]
-lint.ignore = ["S603"]
-# Disallow all relative imports.
-lint.flake8-tidy-imports.ban-relative-imports = "all"
-lint.mccabe.max-complexity = 5
-lint.pydocstyle.convention = "numpy"
 
 [tool.pylint.main]
 # Analyse import fallback blocks. This can be used to support both Python 2 and 3
@@ -624,7 +625,7 @@ filterwarnings = [
   "ignore:The --looponfail command line argument and looponfailroots config variable are deprecated:DeprecationWarning",
   "ignore::DeprecationWarning:dateutil.tz.tz",
 ]
-testpaths = ["src", "tests"]
+testpaths = ["lib", "src", "tests"]
 xfail_strict = true
 
 [tool.coverage.report]
@@ -653,10 +654,11 @@ output = "docs/reports/coverage.xml"
 # note: file://./pyrightconfig.json has precedence over this section
 deprecateTypingAliases = true
 enableReachabilityAnalysis = true
+extraPaths = ["./lib", "./src"]
 strictDictionaryInference = true
 strictListInference = true
 strictSetInference = true
-strict = ['dicom_hub', 'pynetdicom', 'pydicom', 'pynetdicomlib']
+strict = ["dicom_hub", "pynetdicom", "pydicom", "dicomlib"]
 typeCheckingMode = "strict"
 
 [tool.poe]
@@ -682,13 +684,14 @@ uses = { PACKAGE_VERSION = "_version" }
 cmd = """
   python -m pdoc
     contextlib
+    dicomlib
+    dicomlib.exceptions
+    dicomlib.handlers
+    pathlib
     pydicom
     pynetdicom
     !pynetdicom.apps
     !pynetdicom.benchmarks
-    pynetdicomlib
-    pynetdicomlib.exceptions
-    pathlib
     pytest
     pytest_mock
     pytest_mock.plugin
@@ -730,6 +733,7 @@ cmd = """
     --cov-report=term
     --cov-report=xml:./docs/reports/coverage.xml
     --cov=./src/
+    --cov=./lib/
     --doctest-glob=README.md
     --junitxml=docs/reports/pytest.xml
     .
