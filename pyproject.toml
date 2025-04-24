@@ -59,6 +59,7 @@ ipykernel = "^6.29.5"
 pytest-watch = "^4.2.0"
 pdoc = "^15.0.1"
 jupyterlab = "^4.4.0"
+locust = "^2.35.0"
 
 [tool.poetry.group.lint.dependencies]
 anybadge = "^1.16.0"
@@ -128,7 +129,7 @@ format.quote-style = "single"
 # Disallow all relative imports.
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 lint.ignore = ["S603"]
-lint.isort.known-first-party = ["dicom_hub", "dicomlib"]
+lint.isort.known-first-party = ["dicom_hub", "dicomlib", "locustfile"]
 lint.mccabe.max-complexity = 5
 lint.pydocstyle.convention = "numpy"
 lint.select = [
@@ -687,6 +688,8 @@ cmd = """
     dicomlib
     dicomlib.exceptions
     dicomlib.handlers
+    locust
+    locustfile
     pathlib
     pydicom
     pynetdicom
@@ -722,6 +725,10 @@ shell = """
       xargs -I{} anybadge --overwrite --label pylint --value {} --file=docs/reports/pylint.svg 7=red 8=orange 9=yellow 10=green
 """
 
+[tool.poe.tasks.locust]
+help = "Execute the locust load tests"
+cmd = "locust"
+
 [tool.poe.tasks.test]
 help = "Test this package and report coverage"
 cmd = """
@@ -735,6 +742,7 @@ cmd = """
     --cov=./src/
     --cov=./lib/
     --doctest-glob=README.md
+    --durations=10
     --junitxml=docs/reports/pytest.xml
     .
 """

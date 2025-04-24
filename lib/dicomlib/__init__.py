@@ -9,13 +9,24 @@ from collections.abc import Iterable, Iterator
 from typing import NotRequired, ParamSpec, TypedDict, TypeVar
 
 import pynetdicom
+from pydicom.dataset import Dataset
 from pynetdicom import ae, build_context
 from pynetdicom import presentation as pres
 from pynetdicom import transport as trans
+from pynetdicom.ae import ApplicationEntity
+from pynetdicom.association import Association
 from pynetdicom.events import EVT_C_STORE, EventHandlerType
-from pynetdicom.sop_class import ComputedRadiographyImageStorage, CTImageStorage, EnhancedCTImageStorage, Verification
+from pynetdicom.presentation import PresentationContext
+from pynetdicom.sop_class import (
+    ComputedRadiographyImageStorage,
+    CTImageStorage,
+    EnhancedCTImageStorage,
+    SOPClass,
+    Verification,
+)
+from pynetdicom.status import Status
 
-from dicomlib import exceptions, handlers
+from dicomlib import exceptions
 
 __all__ = [
     'DEFAULT_CLIENT_AE_TITLE',
@@ -23,15 +34,18 @@ __all__ = [
     'DEFAULT_SERVER_AE_TITLE',
     'DEFAULT_TIMEOUTS',
     'EVT_C_STORE',
+    'ApplicationEntity',
+    'Association',
     'CTImageStorageContext',
     'ComputedRadiographyImageStorageContext',
+    'Dataset',
     'EnhancedCTImageStorageContext',
+    'PresentationContext',
+    'SOPClass',
+    'Status',
     'TimeoutOpts',
     'VerificationContext',
     'association',
-    'exceptions',
-    'handlers',
-    'server',
 ]
 
 P = ParamSpec('P')
@@ -122,6 +136,26 @@ def _set_timeout(application_entity: ae.ApplicationEntity, timeout: T) -> T:
     return timeout
 
 
+def get_association(
+    address: tuple[str, int],
+    calling_ae_title: str = DEFAULT_CLIENT_AE_TITLE,
+    called_ae_title: str = DEFAULT_SERVER_AE_TITLE,
+    request_contexts: Iterable[pres.PresentationContext] = DEFAULT_PRESENTATION_CONTEXTS,
+    timeout: int | float | TimeoutOpts | None = DEFAULT_TIMEOUTS,
+) -> pynetdicom.Association:
+    addr, port = address
+
+    application_entity = ae.ApplicationEntity(ae_title=calling_ae_title)
+    _set_timeout(application_entity, timeout)
+
+    if not (
+        assoc := application_entity.associate(addr, port, contexts=list(request_contexts), ae_title=called_ae_title)
+    ).is_established:
+        raise exceptions.DICOMAssociationError(f'Association with {called_ae_title}@{addr}:{port} failed')
+
+    return assoc
+
+
 @contextlib.contextmanager
 def association(
     address: tuple[str, int],
@@ -194,19 +228,9 @@ def association(
     ----------
     - [Writing your first SCU | `pynetdicom`](https://pydicom.github.io/pynetdicom/dev/tutorials/create_scu.html#create-an-application-entity-and-associate)
     """
-    addr, port = address
-    remote_aehost = f'{called_ae_title}@{addr}:{port}'
-
-    application_entity = ae.ApplicationEntity(ae_title=calling_ae_title)
-    _set_timeout(application_entity, timeout)
-
-    if not (
-        assoc := application_entity.associate(addr, port, contexts=list(request_contexts), ae_title=called_ae_title)
-    ).is_established:
-        raise exceptions.DICOMAssociationError(f'Association with {remote_aehost} failed')
-
+    assoc = get_association(address, calling_ae_title, called_ae_title, request_contexts, timeout)
     try:
-        logger.debug('Association established with %s', remote_aehost)
+        logger.debug('Association established with %s', f'{called_ae_title}@{address[0]}:{address[1]}')
         yield assoc
     finally:
         assoc.release()
