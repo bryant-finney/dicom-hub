@@ -30,7 +30,7 @@ def help_callback(ctx: typer.Context, value: bool | None = None) -> None:
 
 HelpAnnotation = typing.Annotated[
     bool | None,
-    typer.Option(
+    typer.Option(  # pyright: ignore[reportUnknownMemberType]
         '-h',
         '--help',
         callback=help_callback,
@@ -53,7 +53,7 @@ def version_callback(ctx: typer.Context, value: bool | None) -> None:
 
 VersionAnnotation = typing.Annotated[
     bool | None,
-    typer.Option(
+    typer.Option(  # pyright: ignore[reportUnknownMemberType]
         '-V',
         '--version',
         callback=version_callback,

@@ -18,7 +18,7 @@ class TaskHolder(Protocol[TaskT]):
 def task(weight: TaskT) -> TaskT: ...
 @overload
 def task(weight: int) -> Callable[[TaskT], TaskT]: ...
-def task(weight: TaskT | int = ...) -> TaskT | Callable[[TaskT], TaskT]:
+def task(weight: TaskT | int = ...) -> TaskT | Callable[[TaskT], TaskT]:  # type: ignore[misc]
     """
     Used as a convenience decorator to be able to declare tasks for a User or a TaskSet
     inline in the class. Example::

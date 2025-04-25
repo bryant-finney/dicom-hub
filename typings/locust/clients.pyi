@@ -8,6 +8,9 @@ import requests
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.cookies import RequestsCookieJar
+
+# for Python 3.10
+from typing_extensions import Unpack
 from urllib3 import PoolManager
 
 if TYPE_CHECKING:
@@ -70,13 +73,13 @@ class HttpSession(requests.Session):
         """Group requests using the "with" keyword."""
         ...
 
-    def request(
+    def request(  # type: ignore[override]
         self,
         method: str | bytes,
         url: str | bytes,
         name: str | None = ...,
         catch_response: bool = ...,
-        context: dict = ...,
+        context: dict[str, Any] = ...,
         *,
         data: Any = ...,
         json: Any = ...,

@@ -6,7 +6,7 @@ This package wraps all functionality provided by the `pynetdicom` library that i
 import contextlib
 import logging
 from collections.abc import Iterable, Iterator
-from typing import NotRequired, ParamSpec, TypedDict, TypeVar
+from typing import ParamSpec, TypedDict, TypeVar
 
 import pynetdicom
 from pydicom.dataset import Dataset
@@ -25,6 +25,9 @@ from pynetdicom.sop_class import (
     Verification,
 )
 from pynetdicom.status import Status
+
+# needed for Python 3.10
+from typing_extensions import NotRequired
 
 from dicomlib import exceptions
 

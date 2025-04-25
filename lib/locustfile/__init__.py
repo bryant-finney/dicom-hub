@@ -1,9 +1,9 @@
-"""Configure `locust` for load testing.
+"""Define various `locustfile`s to configure `locust` for load testing.
 
 ## Usage
 
 ```sh
-locust
+locust --host=${hostname}:${port}
 ```
 
 ## References

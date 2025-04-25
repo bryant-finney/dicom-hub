@@ -41,7 +41,9 @@ scripts.dicom-hub = "dicom_hub.cli:app"
 
 [tool.mypy]
 # https://mypy.readthedocs.io/en/stable/config_file.html#using-a-pyproject-toml-file
+exclude = ['''^typings/.*''']
 mypy_path = "typings"
+python_version = "3.10"
 
 [tool.poetry]
 packages = [
@@ -74,6 +76,10 @@ mdformat-frontmatter = "^2.0.8"
 mdformat-footnote = "^0.1.1"
 pyright = { extras = ["nodejs"], version = "^1.1.399" }
 types-pydicom = "^3.0.0.0"
+types-gevent = "^24.11.0.20250401"
+types-pyyaml = "^6.0.12.20250402"
+types-requests = "^2.32.0.20250328"
+types-flask = "^1.1.6"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.8.0"
@@ -655,6 +661,7 @@ output = "docs/reports/coverage.xml"
 # note: file://./pyrightconfig.json has precedence over this section
 deprecateTypingAliases = true
 enableReachabilityAnalysis = true
+exclude = ["typings/locust", "typings/configargparse"]
 extraPaths = ["./lib", "./src"]
 strictDictionaryInference = true
 strictListInference = true

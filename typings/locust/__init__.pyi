@@ -2,17 +2,17 @@
 
 import os
 
-from ._version import version as __version__
-from .contrib.fasthttp import FastHttpUser
-from .debug import run_single_user
-from .shape import LoadTestShape
-from .user import wait_time
-from .user.sequential_taskset import SequentialTaskSet
-from .user.task import TaskSet, tag, task
-from .user.users import HttpUser, User
-from .user.wait_time import between, constant, constant_pacing, constant_throughput
-from .util.deprecation import DeprecatedHttpLocustClass as HttpLocust
-from .util.deprecation import DeprecatedLocustClass as Locust
+from locust._version import version as __version__
+from locust.contrib.fasthttp import FastHttpUser
+from locust.debug import run_single_user
+from locust.shape import LoadTestShape
+from locust.user import wait_time
+from locust.user.sequential_taskset import SequentialTaskSet
+from locust.user.task import TaskSet, tag, task
+from locust.user.users import HttpUser, User
+from locust.user.wait_time import between, constant, constant_pacing, constant_throughput
+from locust.util.deprecation import DeprecatedHttpLocustClass as HttpLocust
+from locust.util.deprecation import DeprecatedLocustClass as Locust
 
 if os.getenv('LOCUST_PLAYWRIGHT', None): ...
 if not os.getenv('LOCUST_SKIP_MONKEY_PATCH', None): ...

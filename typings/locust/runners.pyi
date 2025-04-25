@@ -4,9 +4,9 @@ from abc import abstractmethod
 from collections.abc import Callable, Iterator, MutableMapping, ValuesView
 from typing import TYPE_CHECKING, Any, NoReturn, TypedDict
 
-from . import User
-from .env import Environment
-from .stats import RequestStats, StatsError
+from locust import User
+from locust.env import Environment
+from locust.stats import RequestStats, StatsError
 
 if TYPE_CHECKING: ...
 logger = ...
@@ -122,8 +122,8 @@ class LocalRunner(Runner):
         """
         ...
 
-class DistributedRunner(Runner):
-    def __init__(self, environment) -> None: ...
+class DistributedRunner(Runner):  # type: ignore[misc]
+    def __init__(self, environment: Environment) -> None: ...
 
 class WorkerNode:
     def __init__(self, id: str, state=..., heartbeat_liveness=...) -> None: ...

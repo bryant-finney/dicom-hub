@@ -79,7 +79,11 @@ repos:
           - rich
           - sh
           - typer
+          - types-flask
+          - types-gevent
           - types-pydicom
+          - types-requests
+          - types-pyyaml
           - typing_extensions
 
         # mypy sometimes encounters false positives when run on individual files (instead of the whole project)
@@ -96,12 +100,18 @@ repos:
       - id: pyright
         additional_dependencies:
           - .
+          - locust
+          - pynetdicom
           - pytest
           - pytest-mock
           - rich
           - sh
           - typer
+          - types-flask
+          - types-gevent
           - types-pydicom
+          - types-requests
+          - types-pyyaml
           - typing_extensions
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 import tempfile
 import uuid
 from collections.abc import Callable
@@ -17,6 +18,20 @@ from pynetdicom.status import Status
 __all__ = [
     'c_store_tmp_dir',
 ]
+
+if sys.version_info >= (3, 11):  # pragma: no cover
+    LOGGING_LEVELS = logging.getLevelNamesMapping()  # type: ignore[attr-defined]
+else:
+    LOGGING_LEVELS = {
+        'CRITICAL': logging.CRITICAL,
+        'FATAL': logging.FATAL,
+        'ERROR': logging.ERROR,
+        'WARN': logging.WARNING,
+        'WARNING': logging.WARNING,
+        'INFO': logging.INFO,
+        'DEBUG': logging.DEBUG,
+        'NOTSET': logging.NOTSET,
+    }
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +75,7 @@ def log_event(level: int | str = logging.DEBUG) -> Callable[[events.Handler[P]],
     -------
     The wrapped event handler
     """
-    log_level = logging.getLevelNamesMapping()[level] if isinstance(level, str) else level
+    log_level = LOGGING_LEVELS[level] if isinstance(level, str) else level
 
     def decorator(handler: events.Handler[P]) -> events.Handler[P]:
         """Create a wrapper to log the events handled by the given event handler.
