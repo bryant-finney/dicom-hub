@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import locust
 
-import dicomlib
 import locustfile
-from dicomlib.exceptions import DICOMError
 
 
 class EchoSCU(locustfile.ServiceClassUser):
@@ -17,6 +15,4 @@ class EchoSCU(locustfile.ServiceClassUser):
     @locust.task
     def send_c_echo(self) -> None:
         """Send a `C-ECHO` request to the SCP."""
-        resp = self.client.send_c_echo()
-        if resp.Status != dicomlib.Status.SUCCESS:
-            raise DICOMError(f'C-ECHO request failed: {resp}')
+        self.client.send_c_echo()

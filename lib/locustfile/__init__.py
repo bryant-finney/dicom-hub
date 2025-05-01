@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, ParamSpec, TypeVar
 import locust
 
 import dicomlib
+from dicomlib.exceptions import DICOMError
 
 if TYPE_CHECKING:
     import locust.env
@@ -30,7 +31,7 @@ __all__ = ['REQUEST_EVENT_TRIGGERS', 'ServiceClassUser']
 MSG_ID_MAX = 0xFFFF
 """The maximum value for the DICOM message ID (a `unit4`)."""
 
-REQUEST_EVENT_TRIGGERS = {dicomlib.Verification: 'send_c_echo'}
+REQUEST_EVENT_TRIGGERS = {dicomlib.Verification: 'send_c_echo', dicomlib.CTImageStorage: 'send_c_store'}
 """Map SOP classes (request types) to the method names that trigger them."""
 
 P = ParamSpec('P')
@@ -65,7 +66,8 @@ def trigger_event_on_call(
             fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=0, exception=e)
             raise
 
-        fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=len(resp), exception=None)
+        exc = DICOMError(f'request failed: {resp}') if resp.Status != dicomlib.Status.SUCCESS else None
+        fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=len(resp), exception=exc)
         return resp
 
     return wrapper
@@ -97,7 +99,7 @@ class ServiceClassUser(locust.User):
     """The locust execution environment is set by the base `locust.User` class."""
 
     host: str  # pyright: ignore[reportIncompatibleVariableOverride]
-    """The server AE's address (e.g., 'localhost:8000')."""
+    """The server AE's address (e.g. 'localhost:8000')."""
 
     request_contexts: Iterable[dicomlib.PresentationContext] = dicomlib.DEFAULT_PRESENTATION_CONTEXTS
     """Request these presentation contexts when establishing the association."""

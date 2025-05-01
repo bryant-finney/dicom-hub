@@ -732,9 +732,26 @@ shell = """
       xargs -I{} anybadge --overwrite --label pylint --value {} --file=docs/reports/pylint.svg 7=red 8=orange 9=yellow 10=green
 """
 
-[tool.poe.tasks.locust]
-help = "Execute the locust load tests"
-cmd = "locust"
+[tool.poe.tasks.locust-master]
+help = "Execute the master process for locust load testing"
+cmd = "locust --master --autostart --enable-rebalancing --expect-workers=${workers} --host=${host} --locustfile=lib/locustfile/${locustfile}.py --run-time=${time} --spawn-rate=${rate} --users=${users}"
+args = [
+  { name = "locustfile", positional = true, default = "echoscu2" },
+  { name = "host", positional = false, default = "localhost:11112" },
+  { name = "rate", options = ["-r", "--spawn-rate"], type = "float", default = 1 },
+  { name = "time", options = ["-t", "--run-time"], default = "60s" },
+  { name = "users", options = ["-u", "--users"], type = "integer", default = 60 },
+  { name = "workers", options = ["--expect-workers"], type = "integer", default = 8 },
+]
+
+[tool.poe.tasks.locust-worker]
+help = "Execute the master process for locust load testing"
+cmd = "locust --worker --locustfile lib/locustfile/${locustfile}.py"
+args = [{ name = "locustfile", positional = true, default = "echoscu2" }]
+
+[tool.poe.tasks.storescp]
+help = "Run storescp to receive DICOM images"
+cmd = "storescp --verbose --ignore --log-level debug 11112"
 
 [tool.poe.tasks.test]
 help = "Test this package and report coverage"
