@@ -62,11 +62,11 @@ def trigger_event_on_call(
 
         try:
             resp = meth(*args, **({'msg_id': counter} | kwargs))  # type: ignore[arg-type]
+            exc = DICOMError(f'request failed: {resp}') if resp.Status != dicomlib.Status.SUCCESS else None
         except Exception as e:
             fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=0, exception=e)
             raise
 
-        exc = DICOMError(f'request failed: {resp}') if resp.Status != dicomlib.Status.SUCCESS else None
         fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=len(resp), exception=exc)
         return resp
 
