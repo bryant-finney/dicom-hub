@@ -2,28 +2,29 @@
 
 from __future__ import annotations
 
-import dicomlib
 import locust
-import locustfile
+
+import dicomlib
 from dicomlib.exceptions import DICOMError
+from tests.locust import MSG_ID_MAX, ServiceClassUser
 
 
-class EchoSCUReassociate(locustfile.ServiceClassUser):
-    """Send an echo request to the SCP, establishing separate associations each time.."""
+class EchoSCUReassociate(ServiceClassUser):
+    """Send an echo request to the SCP, establishing separate associations each time."""
 
     host = 'localhost:11112'
 
     def on_start(self) -> None:
         """Override the parent method to skip the association."""
         self.counter = 0
-        hostname, port = self.host.rsplit(':', maxsplit=1)
-        self.hostname, self.port = hostname, int(port)
+        self.hostname, port = self.host.rsplit(':', maxsplit=1)
+        self.port = int(port)
 
     def on_stop(self) -> None:
         """Override the parent method (there is no association to close)."""
 
     def _send_request(self) -> dicomlib.Dataset:
-        self.counter = (self.counter + 1) % locustfile.MSG_ID_MAX
+        self.counter = (self.counter + 1) % MSG_ID_MAX
         with dicomlib.association(
             (self.host, self.port), self.calling_ae_title, self.called_ae_title, self.request_contexts
         ) as client:

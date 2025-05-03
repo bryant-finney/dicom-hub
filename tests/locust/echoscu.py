@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import locust
 
-import locustfile
+from tests.locust import ServiceClassUser
+
+__all__ = ['EchoSCU']
 
 
-class EchoSCU(locustfile.ServiceClassUser):
+class EchoSCU(ServiceClassUser):
     """Send an echo request to the SCP."""
 
     host = 'localhost:11112'
