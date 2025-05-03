@@ -14,7 +14,6 @@ locust --host=${hostname}:${port}
 from __future__ import annotations
 
 import functools
-import time
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
@@ -53,22 +52,14 @@ def trigger_event_on_call(
         nonlocal counter
         counter = (counter + 1) % MSG_ID_MAX
 
-        t_start = time.perf_counter()
-        fire = functools.partial(
-            environment.events.request.fire,  # pyright: ignore[reportUnknownMemberType]
+        with environment.events.request.measure(
             request_type='DICOM',
             name=request_class.name,
-        )
-
-        try:
+        ) as _:
             resp = meth(*args, **({'msg_id': counter} | kwargs))  # type: ignore[arg-type]
-            exc = DICOMError(f'request failed: {resp}') if resp.Status != dicomlib.Status.SUCCESS else None
-        except Exception as e:
-            fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=0, exception=e)
-            raise
-
-        fire(response_time=(time.perf_counter() - t_start) * 1000, response_length=len(resp), exception=exc)
-        return resp
+            if resp.Status != dicomlib.Status.SUCCESS:
+                raise DICOMError(f'request failed: {resp}')
+            return resp
 
     return wrapper
 
