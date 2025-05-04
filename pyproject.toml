@@ -7,7 +7,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 name = "dicom-hub"
 description = "A service class provider for storing DICOM images and triggering processing hooks"
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 authors = [{ name = "Bryant Finney", email = "<bryant.finney@outlook.com>" }]
 requires-python = ">=3.10,<4"
 classifiers = [
