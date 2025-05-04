@@ -22,6 +22,8 @@ import locust
 
 import dicomlib
 
+# note: this import enables static type analysis of the `Session` class because mypy / pyright didn't pick up on the
+# ...     `__getattr__` method
 if TYPE_CHECKING:  # pragma: no cover
     import locust.env
 
@@ -29,7 +31,7 @@ if TYPE_CHECKING:  # pragma: no cover
 else:
     from tests.locust.session import Session
 
-__all__ = ['ServiceClassUser', 'Session']
+__all__ = ['DICOMClient', 'ServiceClassUser', 'ServiceClassUserSession', 'Session']
 
 logger = logging.getLogger(__name__)
 
@@ -57,10 +59,13 @@ class DICOMClient:
     @property
     @contextlib.contextmanager
     def session(self) -> Iterator[Session]:
-        with dicomlib.association(
-            (self.hostname, self.port), self.calling_ae_title, self.called_ae_title, self.request_contexts, self.timeout
-        ) as assoc:
-            yield Session(self.environment, assoc)
+        """Context manager provides a similar API to `dicomlib.association()`."""
+        session = self.get_session()
+        try:
+            yield session
+        finally:
+            if session.is_established:
+                session.release()
 
     def get_session(self) -> Session:
         """Start a session by establishing an association with the SCP server."""

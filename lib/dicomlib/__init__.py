@@ -49,6 +49,8 @@ __all__ = [
     'TimeoutOpts',
     'VerificationContext',
     'association',
+    'get_association',
+    'server',
 ]
 
 P = ParamSpec('P')
@@ -146,6 +148,75 @@ def get_association(
     request_contexts: Iterable[pres.PresentationContext] = DEFAULT_PRESENTATION_CONTEXTS,
     timeout: int | float | TimeoutOpts | None = DEFAULT_TIMEOUTS,
 ) -> pynetdicom.Association:
+    """Establish a `pynetdicom.Association` with the given remote `pynetdicom.ae.ApplicationEntity`.
+
+    Examples
+    --------
+    Send a `C-ECHO` request to an `pynetdicom.ae.ApplicationEntity` for a local `storescp` server:
+
+    <!-- run a `storescp` server in the background
+
+    >>> host, port = getfixture('storescp').server_address
+
+    -->
+
+    >>> assoc = get_association((host, port))
+    >>> try:
+    ...     res = assoc.send_c_echo()
+    ... finally:
+    ...     assoc.release()
+    >>> Status(res.Status)
+    <Status.SUCCESS: 0>
+
+    An `int | float` can be passed as the `timeout` argument to override the values all timeout values:
+
+    >>> assoc = get_association((host, port), timeout=0)
+    Traceback (most recent call last):
+        ...
+    dicomlib.exceptions.DICOMAssociationError: ...
+
+    Additionally, specific timeout values can be overridden by passing a `TimeoutOpts` dictionary:
+
+    >>> assoc = get_association((host, port), timeout={'connection_timeout': 0})
+    >>> try:
+    ...     res = assoc.send_c_echo()
+    ... finally:
+    ...     assoc.release()
+    >>> Status(res.Status)
+    <Status.SUCCESS: 0>
+
+    Parameters
+    ----------
+    addr
+        The hostname or IP address of the remote `pynetdicom.ae.ApplicationEntity`
+    port
+        The port number of the remote `pynetdicom.ae.ApplicationEntity`
+    calling_ae_title
+        The title of this `pynetdicom.ae.ApplicationEntity` (SCU); defaults to `'dicom-hub.client'`
+    called_ae_title
+        The title of the remote `pynetdicom.ae.ApplicationEntity` (SCP); defaults to `'dicom-hub.server'`
+    request_contexts
+        The presentation contexts to request for the association; defaults to `DEFAULT_PRESENTATION_CONTEXTS`
+    timeout
+        Behavior varies according to type; defaults to `DEFAULT_TIMEOUTS`
+        - If `None`, use the default values defined in `pynetdicom`
+        - If a `dict` (`TimeoutOpts`), override `DEFAULT_TIMEOUTS` with the provided key/value pairs
+        - Otherwise, set all timeouts to that value
+
+    Yields
+    ------
+    association
+        The `pynetdicom.association.Association` object for communicating with the remote peer
+
+    Raises
+    ------
+    dicomlib.exceptions.DICOMAssociationError
+        If the association could not be established with the remote peer
+
+    References
+    ----------
+    - [Writing your first SCU | `pynetdicom`](https://pydicom.github.io/pynetdicom/dev/tutorials/create_scu.html#create-an-application-entity-and-associate)
+    """
     addr, port = address
 
     application_entity = ae.ApplicationEntity(ae_title=calling_ae_title)

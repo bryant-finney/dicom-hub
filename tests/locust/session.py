@@ -14,6 +14,8 @@ import locust.env
 import dicomlib
 from dicomlib.exceptions import DICOMError
 
+__all__ = ['Session', 'SessionType']
+
 MSG_ID_MAX = 0xFFFF
 """The maximum value for the DICOM message ID (a `unit4`)."""
 
