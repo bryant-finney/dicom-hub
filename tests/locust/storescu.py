@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 class StoreSCU(ServiceClassUser):
     """Send a `C-STORE` request to the SCP, sharing a single association throughout the test."""
 
-    host = 'localhost:11112'
-
     def on_start(self) -> None:
         """Extend the parent `on_start` method to read the 'CT_small.dcm' test data file."""
         super().on_start()
@@ -35,8 +33,6 @@ class StoreSCU(ServiceClassUser):
 
 class StoreSCUSession(ServiceClassUserSession):
     """Send a `C-STORE` request to the SCP, sharing a single association throughout the test."""
-
-    host = 'localhost:11112'
 
     def on_start(self) -> None:
         """Extend the parent `on_start` method to read the 'CT_small.dcm' test data file."""

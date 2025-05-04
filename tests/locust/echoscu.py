@@ -12,8 +12,6 @@ __all__ = ['EchoSCU']
 class EchoSCU(ServiceClassUser):
     """Send an echo request to the SCP, establishing separate associations each time."""
 
-    host = 'localhost:11112'
-
     @locust.task
     def send_c_echo(self) -> None:
         """Send a `C-ECHO` request to the SCP."""
@@ -23,8 +21,6 @@ class EchoSCU(ServiceClassUser):
 
 class EchoSCUSession(ServiceClassUserSession):
     """Send an echo request to the SCP."""
-
-    host = 'localhost:11112'
 
     @locust.task
     def send_c_echo(self) -> None:

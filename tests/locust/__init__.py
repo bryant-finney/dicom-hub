@@ -92,11 +92,14 @@ class ServiceClassUser(locust.User):
     abstract = True
     """Mark this class as abstract."""
 
+    client: DICOMClient
+    """The DICOM client used to send requests to the SCP is instantiated by the initializer method."""
+
     environment: locust.env.Environment
     """The locust execution environment is set by the base `locust.User` class."""
 
-    host: str  # pyright: ignore[reportIncompatibleVariableOverride]
-    """The server AE's address (e.g. 'localhost:8000')."""
+    host: str = 'localhost:11112'  # pyright: ignore[reportIncompatibleVariableOverride]
+    """The server AE's address (by default, swarm 'localhost:11112')."""
 
     calling_ae_title = dicomlib.DEFAULT_CLIENT_AE_TITLE
     """The client's AE title."""
