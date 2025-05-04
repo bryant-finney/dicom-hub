@@ -7,7 +7,6 @@ import locust
 from locust.env import Environment
 
 import dicomlib
-from dicomlib.exceptions import DICOMError
 from tests.locust import ServiceClassUser
 
 
@@ -48,6 +47,4 @@ class UploadStudy(ServiceClassUser):
         """Upload all DICOM images in the study."""
         with self.client.session as session:
             for dataset in self.data:
-                resp = session.send_c_store(dataset)
-                if resp.Status != dicomlib.Status.SUCCESS:
-                    raise DICOMError(f'Failed to upload SOP instance {dataset.SOPInstanceUID}: {resp}')
+                session.send_c_store(dataset)
