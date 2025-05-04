@@ -9,14 +9,31 @@ import locust
 import pydicom
 from pydicom.data import get_testdata_file
 
-from tests.locust import ServiceClassUserSession
+from tests.locust import ServiceClassUser, ServiceClassUserSession
 
-__all__ = ['StoreSCU']
+__all__ = ['StoreSCU', 'StoreSCUSession']
 
 logger = logging.getLogger(__name__)
 
 
-class StoreSCU(ServiceClassUserSession):
+class StoreSCU(ServiceClassUser):
+    """Send a `C-STORE` request to the SCP, sharing a single association throughout the test."""
+
+    host = 'localhost:11112'
+
+    def on_start(self) -> None:
+        """Extend the parent `on_start` method to read the 'CT_small.dcm' test data file."""
+        super().on_start()
+        self.ct_small_dataset = cast(pydicom.Dataset, get_testdata_file('CT_small.dcm', read=True))
+
+    @locust.task
+    def send_c_store(self) -> None:
+        """Send a `C-STORE` request to the SCP."""
+        with self.client.session as session:
+            session.send_c_store(self.ct_small_dataset)
+
+
+class StoreSCUSession(ServiceClassUserSession):
     """Send a `C-STORE` request to the SCP, sharing a single association throughout the test."""
 
     host = 'localhost:11112'
