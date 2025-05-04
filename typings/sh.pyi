@@ -17,7 +17,7 @@ class Contrib:
     def sudo(self) -> Iterator[None]:
         """Run the wrapped code as root."""
 
-class ErrorReturnCode(Exception):  # noqa: N818
+class ErrorReturnCode(Exception):
     """Base class for all exceptions as a result of a command's exit status being deemed an error.
 
     This base class is dynamically subclassed into derived classes with the format:
@@ -46,7 +46,7 @@ class ErrorReturnCode(Exception):  # noqa: N818
 
     stderr: bytes
 
-class CommandNotFound(AttributeError):  # noqa: N818
+class CommandNotFound(AttributeError):
     """Raised when a command is not found on the system."""
 
 class SystemCtl:
