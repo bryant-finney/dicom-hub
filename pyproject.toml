@@ -701,7 +701,7 @@ shell = """
 help = "Execute the master process for locust load testing"
 cmd = "locust --master --autostart --enable-rebalancing --expect-workers=${workers} --host=${host} --locustfile=${locustfile} --users=${users}"
 args = [
-  { name = "locustfile", positional = true, default = "./tests/locust/" },
+  { name = "locustfile", positional = true, default = "./tests/locust/scenarios/" },
   { name = "host", positional = false, default = "localhost:11112" },
   { name = "rate", options = [
     "-r",
@@ -722,10 +722,10 @@ args = [
 
 [tool.poe.tasks.locust-worker]
 help = "Execute the master process for locust load testing"
-# cmd = "locust --worker --locustfile lib/locustfile/${locustfile}.py"
 cmd = "locust --worker --locustfile=${locustfile}"
-# args = [{ name = "locustfile", positional = true, default = "echoscu" }]
-args = [{ name = "locustfile", positional = true, default = "./tests/locust/" }]
+args = [
+  { name = "locustfile", positional = true, default = "./tests/locust/scenarios/" },
+]
 
 [tool.poe.tasks.storescp]
 help = "Run storescp to receive DICOM images"

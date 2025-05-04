@@ -7,6 +7,7 @@ import locust
 from locust.env import Environment
 
 import dicomlib
+from dicomlib.exceptions import DICOMError
 from tests.locust import ServiceClassUser
 
 
@@ -33,6 +34,11 @@ class UploadStudy(ServiceClassUser):
 
         self._data = self.load_data()
 
+    @property
+    def data(self) -> Iterable[dicomlib.Dataset]:
+        """Return the DICOM images to upload."""
+        return self._data
+
     def load_data(self) -> Iterable[dicomlib.Dataset]:
         """Load DICOM images from the `locust.User`'s `data_path` directory."""
         return [dicomlib.dcmread(fname) for fname in self.data_path.glob('*.dcm')]
@@ -41,5 +47,7 @@ class UploadStudy(ServiceClassUser):
     def upload_all(self) -> None:
         """Upload all DICOM images in the study."""
         with self.client.session as session:
-            for dataset in self._data:
-                session.send_c_store(dataset)
+            for dataset in self.data:
+                resp = session.send_c_store(dataset)
+                if resp.Status != dicomlib.Status.SUCCESS:
+                    raise DICOMError(f'Failed to upload SOP instance {dataset.SOPInstanceUID}: {resp}')

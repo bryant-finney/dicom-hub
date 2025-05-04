@@ -11,7 +11,7 @@ from typing import ParamSpec, TypedDict, TypeVar
 import pynetdicom
 from pydicom.dataset import Dataset
 from pydicom.filereader import dcmread
-from pydicom.uid import UID
+from pydicom.uid import UID, ExplicitVRLittleEndian, ImplicitVRLittleEndian
 from pynetdicom import ae, build_context
 from pynetdicom import presentation as pres
 from pynetdicom import transport as trans
@@ -46,6 +46,8 @@ __all__ = [
     'ComputedRadiographyImageStorageContext',
     'Dataset',
     'EnhancedCTImageStorageContext',
+    'ExplicitVRLittleEndian',
+    'ImplicitVRLittleEndian',
     'PresentationContext',
     'SOPClass',
     'Status',

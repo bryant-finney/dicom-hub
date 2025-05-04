@@ -1,6 +1,6 @@
 """Upload a single DICOM series from a single study, stored at the path `data/ct_nonequi_tilt`.
 
-This study is available at https://www.aliza-dicom-viewer.com/download/datasets -> https://drive.google.com/file/d/15Wc-KboUAE0vqahedcExCYskOEVf6Zub/view
+This series is available at https://www.aliza-dicom-viewer.com/download/datasets -> https://drive.google.com/file/d/15Wc-KboUAE0vqahedcExCYskOEVf6Zub/view
 """
 
 from __future__ import annotations
