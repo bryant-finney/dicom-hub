@@ -9,14 +9,14 @@ import locust
 import pydicom
 from pydicom.data import get_testdata_file
 
-from tests.locust import ServiceClassUser
+from tests.locust import ServiceClassUserSession
 
 __all__ = ['StoreSCU']
 
 logger = logging.getLogger(__name__)
 
 
-class StoreSCU(ServiceClassUser):
+class StoreSCU(ServiceClassUserSession):
     """Send a `C-STORE` request to the SCP, sharing a single association throughout the test."""
 
     host = 'localhost:11112'
@@ -29,7 +29,7 @@ class StoreSCU(ServiceClassUser):
     @locust.task
     def send_c_store(self) -> None:
         """Send a `C-STORE` request to the SCP."""
-        self.client.send_c_store(self.ct_small_dataset)
+        self.session.send_c_store(self.ct_small_dataset)
 
 
 logger.debug('successfully imported %s', __name__)

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import locust
 
-from tests.locust import ServiceClassUser
+from tests.locust import ServiceClassUserSession
 
 __all__ = ['EchoSCU']
 
 
-class EchoSCU(ServiceClassUser):
+class EchoSCU(ServiceClassUserSession):
     """Send an echo request to the SCP."""
 
     host = 'localhost:11112'
@@ -17,4 +17,4 @@ class EchoSCU(ServiceClassUser):
     @locust.task
     def send_c_echo(self) -> None:
         """Send a `C-ECHO` request to the SCP."""
-        self.client.send_c_echo()
+        self.session.send_c_echo()

@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import locust
 
-import dicomlib
-from dicomlib.exceptions import DICOMError
-from tests.locust import MSG_ID_MAX, ServiceClassUser
+from tests.locust import ServiceClassUser
 
 
 class EchoSCUReassociate(ServiceClassUser):
@@ -14,30 +12,8 @@ class EchoSCUReassociate(ServiceClassUser):
 
     host = 'localhost:11112'
 
-    def on_start(self) -> None:
-        """Override the parent method to skip the association."""
-        self.counter = 0
-        self.hostname, port = self.host.rsplit(':', maxsplit=1)
-        self.port = int(port)
-
-    def on_stop(self) -> None:
-        """Override the parent method (there is no association to close)."""
-
-    def _send_request(self) -> dicomlib.Dataset:
-        self.counter = (self.counter + 1) % MSG_ID_MAX
-        with dicomlib.association(
-            (self.host, self.port), self.calling_ae_title, self.called_ae_title, self.request_contexts
-        ) as client:
-            resp = client.send_c_echo(msg_id=self.counter)
-            if resp.Status != dicomlib.Status.SUCCESS:
-                raise DICOMError(f'request failed: {resp}')
-            return resp
-
     @locust.task
     def send_c_echo(self) -> None:
         """Send a `C-ECHO` request to the SCP."""
-        with self.environment.events.request.measure(
-            request_type='DICOM',
-            name=dicomlib.Verification.name,
-        ) as _:
-            self._send_request()
+        with self.client.session as session:
+            session.send_c_echo()
