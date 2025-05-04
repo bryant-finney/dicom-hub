@@ -62,6 +62,9 @@ pytest-watch = "^4.2.0"
 pdoc = "^15.0.1"
 jupyterlab = "^4.4.0"
 locust = "^2.35.0"
+matplotlib = "^3.10.1"
+numpy = "^2.2.5"
+pylibjpeg = { extras = ["all"], version = "^2.0.1" }
 
 [tool.poetry.group.lint.dependencies]
 anybadge = "^1.16.0"
